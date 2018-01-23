@@ -50,11 +50,19 @@ class AmcrestCam(Camera):
         self._resolution = amcrest.resolution
         self._token = self._auth = amcrest.authentication
 
-    def camera_image(self):
+    @asyncio.coroutine
+    def async_camera_image(self):
         """Return a still image response from the camera."""
-        # Send the request to snap a picture and return raw jpg data
-        response = self._camera.snapshot(channel=self._resolution)
-        return response.data
+        from haffmpeg import ImageFrame, IMAGE_JPEG
+        ffmpeg = ImageFrame(self._ffmpeg.binary, loop=self.hass.loop)
+        streaming_url = self._camera.rtsp_url(typeno=self._resolution)
+        if streaming_url is None:
+            return
+
+        image = yield from asyncio.shield(ffmpeg.get_image(
+            streaming_url, output_format=IMAGE_JPEG,
+            extra_cmd=self._ffmpeg_arguments), loop=self.hass.loop)
+        return image
 
     @asyncio.coroutine
     def handle_async_mjpeg_stream(self, request):
