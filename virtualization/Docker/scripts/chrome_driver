@@ -1,0 +1,38 @@
+#!/bin/bash
+# Sets up Chrome Driver.
+
+# Stop on errors
+set -e
+
+PACKAGES_BACKPORTS=(
+  ca-certificates-java
+  openjdk-8-jre-headless 
+)
+
+PACKAGES=(
+  google-chrome-stable
+  libgconf-2-4
+  libxi6
+  unzip
+  xvfb
+)
+
+
+# Add Google Chrome repository
+echo "deb http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+wget -qO - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+
+# Install packages
+apt-get update -y
+apt-get install -y --no-install-recommends -t jessie-backports ${PACKAGES_BACKPORTS[@]}
+apt-get install -y --no-install-recommends ${PACKAGES[@]}
+
+# Configure Chrome Driver
+CHROME_DRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`
+cd /usr/src/app
+mkdir -p build && cd build
+wget -N http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
+unzip chromedriver_linux64.zip
+rm chromedriver_linux64.zip
+mv -f chromedriver /usr/local/bin/chromedriver
+chmod 0755 /usr/local/bin/chromedriver

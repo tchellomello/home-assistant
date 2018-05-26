@@ -69,6 +69,10 @@ if [ "$INSTALL_IPERF3" == "yes" ]; then
   virtualization/Docker/scripts/iperf3
 fi
 
+if [ "$INSTALL_CHROME_DRIVER" == "yes" ]; then
+  virtualization/Docker/scripts/chrome_driver
+fi
+
 # Remove packages
 apt-get remove -y --purge ${PACKAGES_DEV[@]}
 apt-get -y --purge autoremove
